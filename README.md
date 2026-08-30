@@ -71,8 +71,8 @@ This project modifies the U1 startup environment under `/etc/init.d`. Read the f
 Example used during development:
 
 ```text
-U1:   192.168.1.29
-WLED: 192.168.1.63
+U1:   192.168.XXX.XXX
+WLED: 192.168.XXX.XXX
 ```
 
 Your addresses may be different.
@@ -80,10 +80,10 @@ Your addresses may be different.
 Test SSH from Windows Command Prompt or PowerShell:
 
 ```cmd
-ssh root@192.168.1.29
+ssh root@192.168.XXX.XXX
 ```
 
-Replace `192.168.1.29` with your U1 address.
+Replace `192.168.XXX.XXX` with your U1 address.
 
 ---
 
@@ -114,10 +114,10 @@ No `pip install` is needed. The bridge only uses Python standard-library modules
 Still in SSH, run:
 
 ```sh
-wget -qO- "http://192.168.1.63/json/info"
+wget -qO- "http://192.168.X.XX/json/info"
 ```
 
-Replace `192.168.1.63` with your WLED address.
+Replace `192.168.X.XX` with your WLED address.
 
 If it works, WLED will return JSON describing the controller.
 
@@ -136,7 +136,7 @@ u1_wled.py
 Find:
 
 ```python
-WLED = "http://192.168.1.63"
+WLED = "http://192.168.XXX.XXX"
 ```
 
 Change it to your WLED controller's address.
@@ -168,10 +168,10 @@ Open a **second** Windows Command Prompt or PowerShell in the downloaded reposit
 Run:
 
 ```cmd
-scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@192.168.1.29:/oem/printer_data/u1_wled/
+scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@192.168.XXX.XXX:/oem/printer_data/u1_wled/
 ```
 
-Replace `192.168.1.29` with your U1 address.
+Replace `192.168.XXX.XXX` with your U1 address.
 
 ---
 
@@ -670,7 +670,7 @@ The main values you may want to change are near the top of `u1_wled.py`.
 ### WLED IP
 
 ```python
-WLED = "http://192.168.1.63"
+WLED = "http://192.168.XXX.XXX"
 ```
 
 ### Poll interval
