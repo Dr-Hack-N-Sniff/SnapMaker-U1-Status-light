@@ -1,3 +1,12 @@
+## IMPORTANT: Set Your WLED IP Address
+
+Before installing, you must change the WLED IP address in `u1_wled.py` to the IP address of your own WLED controller.
+
+Open `u1_wled.py` and find:
+
+```python
+WLED = "http://192.168.1.63"
+
 # Snapmaker U1 WLED Status Bridge - Quick Start
 
 This is the short copy/paste version. Read `README.md` for the explanation behind each step.
