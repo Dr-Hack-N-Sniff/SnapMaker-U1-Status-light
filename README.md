@@ -1,5 +1,58 @@
 # Snapmaker U1 WLED Status Bridge
 
+> **Open-source U1 modification:** real-time WLED status lighting driven directly by the Snapmaker U1. No Raspberry Pi, Home Assistant server, cloud service, or always-on PC is required after installation.
+
+[Quick Start](QUICKSTART.md) | [v1.0.1 Release](https://github.com/Dr-Hack-N-Sniff/SnapMaker-U1-Status-light/releases/tag/v1.0.1) | [Changelog](CHANGELOG.md)
+
+## Project at a glance
+
+This project turns a network-connected WLED strip into a live status indicator for the Snapmaker U1. A lightweight Python bridge runs **on the printer**, reads local Moonraker state, and translates heater, print, pause, completion, cancellation, and error conditions into visible lighting patterns.
+
+### Why this project matters
+
+- **No extra computer required:** the bridge runs directly on the U1.
+- **Uses existing U1 telemetry:** Moonraker provides printer state, print progress, bed temperature, and all four hotend temperatures.
+- **Useful at a glance:** the operator can see warm-up, printing, pause, completion, and error states from across the room.
+- **Progress without a screen:** green breathing speed increases as the print advances.
+- **Boot tolerant:** temporary Moonraker or Wi-Fi/WLED startup failures are retried automatically.
+- **Firmware recoverable:** the repository includes a repair workflow for restoring the startup integration after firmware updates.
+- **Open and reproducible:** installation, service management, tests, troubleshooting, and recovery steps are documented in this repository.
+
+## Hardware validation
+
+The project has been tested on a real Snapmaker U1, including:
+
+- Standby / idle indication
+- Heated bed warm-up
+- Extruder 0, 1, 2, and 3 warm-up
+- Combined bed + hotend warm-up
+- Initial print warm-up transitioning into printing
+- Progress-dependent green breathing
+- Pause, complete, cancel, and error behaviors
+- Cold-boot autostart
+- WLED retry after network startup delay
+- Moonraker startup delay handling
+- Firmware-repair script execution
+
+A tested warm-up sequence was:
+
+```text
+standby -> heating_both -> heating_bed -> printing
+```
+
+## Demo media
+
+Photos and a short demonstration video are being added. The planned media set will show:
+
+1. Finished U1 + PopStation installation
+2. White breathing idle state
+3. Orange/red warm-up state
+4. Green printing state
+5. Close-up of the WLED/LED installation
+6. Short video showing state changes in real time
+
+---
+
 A lightweight status-light bridge that runs **directly on the Snapmaker U1** and controls a WLED strip over the local network.
 
 No Windows PC, Raspberry Pi, Home Assistant server, or third-party Python packages are required once installed.
@@ -797,4 +850,11 @@ repair.sh       Firmware-update repair tool
 uninstall.sh    Removes startup integration
 status.sh       Quick service + log status helper
 ```
+
+
+---
+
+## License
+
+This project is released under the [MIT License](LICENSE).
 
