@@ -12,7 +12,7 @@ from urllib.error import URLError, HTTPError
 # ============================================================
 
 MOONRAKER = "http://127.0.0.1:7125"
-WLED = "http://YOUR_WLED_IP"   # CHANGE THIS before running.
+WLED = "http://YOUR_WLED_IP"   # CHANGE THIS to your WLED IP address.
 
 POLL_INTERVAL = 1.0
 

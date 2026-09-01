@@ -56,36 +56,7 @@ LED strip / PopStation underglow
 The print-progress effect uses the whole strip instead of a literal progress bar. This works well when part of the strip is hidden underneath a PopStation or enclosure.
 
 ---
-## Bill of Materials
 
-Required:
-
-- Snapmaker U1
-- WLED-compatible controller
-- Addressable RGB LED strip compatible with your WLED controller
-- Appropriate power supply for the LED strip/controller
-- Wi-Fi or Ethernet network shared by the U1 and WLED device
-- Wire and connectors as needed for your installation
-
-Optional:
-
-- JST connectors or similar quick-disconnects
-- Inline fuse
-- 3D-printed mounting clips or brackets
-
-## Tested Hardware
-
-This project was developed and tested with:
-
-- Snapmaker U1
-- BIQU PopStation Mini
-- WLED-compatible controller
-- Approximately 3 ft of addressable RGB LED strip
-- 20 LEDs configured in WLED
-- WLED 0.16.x
-- LED strip mounted beneath the PopStation Mini
-
-Other WLED-compatible controllers and addressable LED strips should work, but have not necessarily been tested with this project.
 # Quick install
 
 ## Before you start
