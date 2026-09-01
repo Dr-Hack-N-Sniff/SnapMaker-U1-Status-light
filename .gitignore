@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+u1_wled.log
+backups/

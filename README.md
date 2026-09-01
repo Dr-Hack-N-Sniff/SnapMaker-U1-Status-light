@@ -4,6 +4,13 @@ A lightweight status-light bridge that runs **directly on the Snapmaker U1** and
 
 No Windows PC, Raspberry Pi, Home Assistant server, or third-party Python packages are required once installed.
 
+## v1.0.1 changes
+
+- Initial print warm-up now overrides the green printing indication until commanded heaters reach target.
+- Heating colors are more distinct: bed = deeper orange, hotend = redder red-orange, bed + hotend = stronger orange-red.
+- Normal heater recovery after warm-up stays green to avoid color flicker during long prints.
+- The included `S62u1-wled` service supports `start`, `stop`, `restart`, and `status`.
+
 > **Tested setup:** Snapmaker U1 with root SSH access, Python 3.11, Moonraker on the U1, and a WLED controller on the same LAN.
 
 ---
@@ -71,8 +78,8 @@ This project modifies the U1 startup environment under `/etc/init.d`. Read the f
 Example used during development:
 
 ```text
-U1:   192.168.XXX.XXX
-WLED: 192.168.XXX.XXX
+U1:   YOUR_U1_IP
+WLED: YOUR_WLED_IP
 ```
 
 Your addresses may be different.
@@ -80,10 +87,10 @@ Your addresses may be different.
 Test SSH from Windows Command Prompt or PowerShell:
 
 ```cmd
-ssh root@192.168.XXX.XXX
+ssh root@YOUR_U1_IP
 ```
 
-Replace `192.168.XXX.XXX` with your U1 address.
+Replace `YOUR_U1_IP` with your U1 address.
 
 ---
 
@@ -114,10 +121,10 @@ No `pip install` is needed. The bridge only uses Python standard-library modules
 Still in SSH, run:
 
 ```sh
-wget -qO- "http://192.168.X.XX/json/info"
+wget -qO- "http://YOUR_WLED_IP/json/info"
 ```
 
-Replace `192.168.X.XX` with your WLED address.
+Replace `YOUR_WLED_IP` with your WLED address.
 
 If it works, WLED will return JSON describing the controller.
 
@@ -136,7 +143,7 @@ u1_wled.py
 Find:
 
 ```python
-WLED = "http://192.168.XXX.XXX"
+WLED = "http://YOUR_WLED_IP"
 ```
 
 Change it to your WLED controller's address.
@@ -168,10 +175,10 @@ Open a **second** Windows Command Prompt or PowerShell in the downloaded reposit
 Run:
 
 ```cmd
-scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@192.168.XXX.XXX:/oem/printer_data/u1_wled/
+scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
 ```
 
-Replace `192.168.XXX.XXX` with your U1 address.
+Replace `YOUR_U1_IP` with your U1 address.
 
 ---
 
@@ -670,7 +677,7 @@ The main values you may want to change are near the top of `u1_wled.py`.
 ### WLED IP
 
 ```python
-WLED = "http://192.168.XXX.XXX"
+WLED = "http://YOUR_WLED_IP"
 ```
 
 ### Poll interval
@@ -718,21 +725,27 @@ The current thresholds are implemented in `status_printing()`:
 
 # Status priority
 
-The bridge gives major printer states priority over heater indication.
+Version 1.0.1 adds an **initial warm-up phase** so heating remains visible after a print is started. The bridge does not immediately switch to green just because Moonraker reports `printing`.
 
-Conceptually:
+During the initial warm-up:
 
 ```text
-printing / paused / error / cancelled / complete
-                    |
-                    v
-                heating
-                    |
-                    v
-                 standby
+standby
+   |
+   v
+bed + hotend heating -> orange/red breathing
+   |
+   v
+bed heating only    -> deep orange breathing
+   |
+   v
+all commanded heaters within 2 C of target
+   |
+   v
+printing             -> green progress breathing
 ```
 
-This prevents a normally hot nozzle during an active print from replacing the green print-progress indication with an orange heating indication.
+Pause, cancel, error, and completion states still take priority. Once the initial warm-up has finished, ordinary small temperature recovery during the print does **not** replace the green progress indication. This avoids the status light flickering between green and heating colors throughout a long print.
 
 ---
 

@@ -12,7 +12,7 @@ from urllib.error import URLError, HTTPError
 # ============================================================
 
 MOONRAKER = "http://127.0.0.1:7125"
-WLED = "http://192.168.1.63"   # CHANGE THIS to your WLED IP address.
+WLED = "http://YOUR_WLED_IP"   # CHANGE THIS before running.
 
 POLL_INTERVAL = 1.0
 
@@ -138,6 +138,55 @@ def heating_state(heaters):
     return None
 
 
+
+
+def choose_desired_state(printer_state, heaters, last_state, warmup_active):
+    """Choose the LED state without letting normal print temperature recovery flicker colors.
+
+    Heating overrides the green printing state only during the initial warm-up
+    phase of a print. Once the commanded heaters have reached their targets,
+    later small temperature dips remain in the green printing indication.
+    """
+    heat_state = heating_state(heaters)
+
+    if printer_state == "paused":
+        return "paused", warmup_active
+
+    if printer_state in ("cancelled", "error"):
+        return printer_state, False
+
+    if printer_state == "complete":
+        # Moonraker may retain a stale complete state after a reboot/service start.
+        if last_state is None:
+            return (heat_state if heat_state else "standby"), False
+        return "complete", False
+
+    if printer_state == "printing":
+        if warmup_active:
+            if heat_state:
+                return heat_state, True
+            return "printing", False
+
+        # A transition from standby/manual heating into printing marks the
+        # beginning of a new print warm-up. A resume from PAUSED does not.
+        new_print = last_state is None or last_state in (
+            "standby",
+            "heating_bed",
+            "heating_hotend",
+            "heating_both",
+            "complete",
+            "cancelled",
+            "error",
+        )
+
+        if new_print and heat_state:
+            return heat_state, True
+
+        return "printing", False
+
+    return (heat_state if heat_state else "standby"), False
+
+
 def status_idle():
     print("WLED -> IDLE", flush=True)
     return set_wled(255, 255, 255, BRI_IDLE, effect=2, speed=45)
@@ -145,17 +194,17 @@ def status_idle():
 
 def status_heating_bed():
     print("WLED -> BED HEATING", flush=True)
-    return set_wled(255, 110, 0, BRI_HEATING, effect=2, speed=80)
+    return set_wled(255, 80, 0, BRI_HEATING, effect=2, speed=80)
 
 
 def status_heating_hotend():
     print("WLED -> HOTEND HEATING", flush=True)
-    return set_wled(255, 45, 0, BRI_HEATING, effect=2, speed=110)
+    return set_wled(255, 20, 0, BRI_HEATING, effect=2, speed=110)
 
 
 def status_heating_both():
     print("WLED -> BED + HOTEND HEATING", flush=True)
-    return set_wled(255, 75, 0, BRI_HEATING, effect=2, speed=145)
+    return set_wled(255, 50, 0, BRI_HEATING, effect=2, speed=145)
 
 
 def printing_bucket(progress):
@@ -255,6 +304,7 @@ def main():
     complete_since = None
     complete_finished = False
     wled_state_applied = False
+    warmup_active = False
 
     while True:
         stats = get_print_stats()
@@ -268,27 +318,10 @@ def main():
             continue
 
         printer_state = stats.get("state")
-
-        # Major printer states take priority over heater indications.
-        if printer_state == "printing":
-            desired_state = "printing"
-        elif printer_state == "paused":
-            desired_state = "paused"
-        elif printer_state in ("cancelled", "error"):
-            desired_state = printer_state
-        elif printer_state == "complete":
-            # Moonraker may retain a stale "complete" state long after a print.
-            # Only show the 30-second completion indication when this running
-            # bridge actually observes a transition into complete. On service
-            # startup, treat an already-complete printer as idle/heating.
-            if last_state is None:
-                heat_state = heating_state(get_heaters())
-                desired_state = heat_state if heat_state else "standby"
-            else:
-                desired_state = "complete"
-        else:
-            heat_state = heating_state(get_heaters())
-            desired_state = heat_state if heat_state else "standby"
+        heaters = get_heaters()
+        desired_state, warmup_active = choose_desired_state(
+            printer_state, heaters, last_state, warmup_active
+        )
 
         if desired_state == "printing":
             progress = get_progress()
