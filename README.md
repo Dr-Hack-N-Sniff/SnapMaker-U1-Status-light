@@ -91,13 +91,29 @@ During printing, the green breathing rate increases as the print progresses:
 
 ### Installation Photos
 
-The project media documents:
+#### Complete Installation
 
-- The complete Snapmaker U1 and PopStation Mini installation
-- The WLED ESP32 controller mounted inside the PopStation Mini
-- Controller wiring
-- Addressable LED strip placement along the bottom edge
-- Green printing-status illumination
+![Snapmaker U1 and BIQU PopStation Mini with green WLED status lighting](images/u1-wled-complete-installation.jpg)
+
+The completed Snapmaker U1 and BIQU PopStation Mini installation with the WLED status lighting active.
+
+#### WLED Controller
+
+![WLED ESP32 controller installed in the PopStation Mini](images/wled-controller-installation.jpg)
+
+The WLED ESP32 controller installed in its recessed enclosure inside the PopStation Mini.
+
+#### LED Strip Installation
+
+![Addressable RGB LED strip mounted along the lower edge of the PopStation Mini](images/led-strip-installation.jpg)
+
+The addressable RGB LED strip mounted along the lower edge of the PopStation Mini.
+
+#### Finished Controller Installation
+
+![Finished WLED controller enclosure and wiring installation](images/wled-controller-finished-installation.png)
+
+The finished controller enclosure and wiring installation with the controller protected by its cover.
 
 > The PopStation Mini is not required. It is simply where I chose to install the controller and LED strip. The software should work with other WLED-compatible installations.
 
