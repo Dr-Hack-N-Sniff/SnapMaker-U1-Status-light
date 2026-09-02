@@ -6,7 +6,7 @@
 
 ## Public creator name
 
-**Dr-Hack-N-Sniff**
+**Hack-N-Sniff**
 
 ## Project URL
 
