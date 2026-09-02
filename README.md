@@ -40,17 +40,68 @@ A tested warm-up sequence was:
 standby -> heating_both -> heating_bed -> printing
 ```
 
-## Demo media
+## Demo
 
-Photos and a short demonstration video are being added. The planned media set will show:
+### Video Demonstration
 
-1. Finished U1 + PopStation installation
-2. White breathing idle state
-3. Orange/red warm-up state
-4. Green printing state
-5. Close-up of the WLED/LED installation
-6. Short video showing state changes in real time
+See the WLED Status Bridge running on an actual Snapmaker U1:
 
+[▶ Watch the U1 WLED Status Bridge Demo](./Snapmaker_U1_WLED_Forum_Demo_under25MB.mp4)
+
+The demonstration shows the status lighting responding to the printer in real time.
+
+### Tested Installation
+
+This project is running on a Snapmaker U1 with a BIQU PopStation Mini.
+
+The WLED controller is installed inside the PopStation Mini, with the addressable LED strip mounted along the lower edge. This makes the printer state visible from across the room without needing to check the U1 screen.
+
+The tested installation uses:
+
+- Snapmaker U1
+- BIQU PopStation Mini
+- WLED ESP32 controller
+- Approximately 3 ft of addressable RGB LED strip
+- 20 LEDs configured in WLED
+- WLED 0.16.x
+
+### Status Lighting
+
+The bridge translates U1 printer state into the following lighting:
+
+| U1 State | WLED Behavior |
+|---|---|
+| Idle | White breathing |
+| Bed heating | Deep orange breathing |
+| Hotend heating | Red-orange breathing |
+| Bed + hotend heating | Orange-red breathing |
+| Printing | Green breathing |
+| Paused | Yellow/orange breathing |
+| Complete | Solid green for about 30 seconds |
+| Cancelled | Solid red |
+| Error | Fast red |
+
+During printing, the green breathing rate increases as the print progresses:
+
+| Print Progress | Breathing Speed |
+|---|---:|
+| 0-24% | 45 |
+| 25-49% | 75 |
+| 50-74% | 110 |
+| 75-89% | 150 |
+| 90-100% | 200 |
+
+### Installation Photos
+
+Photos of the completed installation show:
+
+- The complete Snapmaker U1 and PopStation Mini installation
+- The WLED ESP32 controller mounted inside the PopStation Mini
+- Controller wiring
+- Addressable LED strip placement along the bottom edge
+- Green printing-status illumination
+
+> The PopStation Mini is not required. It is simply where I chose to install the controller and LED strip. The software should work with other WLED-compatible installations.
 ---
 
 A lightweight status-light bridge that runs **directly on the Snapmaker U1** and controls a WLED strip over the local network.
