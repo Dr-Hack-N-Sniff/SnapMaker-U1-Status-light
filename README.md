@@ -67,8 +67,6 @@ The tested installation uses:
 
 ### Status Lighting
 
-The bridge translates U1 printer state into the following lighting:
-
 | U1 State | WLED Behavior |
 |---|---|
 | Idle | White breathing |
@@ -93,7 +91,7 @@ During printing, the green breathing rate increases as the print progresses:
 
 ### Installation Photos
 
-Photos of the completed installation show:
+The project media documents:
 
 - The complete Snapmaker U1 and PopStation Mini installation
 - The WLED ESP32 controller mounted inside the PopStation Mini
@@ -102,6 +100,7 @@ Photos of the completed installation show:
 - Green printing-status illumination
 
 > The PopStation Mini is not required. It is simply where I chose to install the controller and LED strip. The software should work with other WLED-compatible installations.
+
 ---
 
 A lightweight status-light bridge that runs **directly on the Snapmaker U1** and controls a WLED strip over the local network.
