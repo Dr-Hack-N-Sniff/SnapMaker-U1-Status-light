@@ -1,32 +1,25 @@
 #!/bin/sh
+set -eu
 
-set -u
+PROJECT_DIR="/oem/printer_data/u1_wled"
+SERVICE_DST="/etc/init.d/S62u1-wled"
+BOOTCONTROL="/etc/init.d/S99_bootcontrol"
+PATCHER="$PROJECT_DIR/bootcontrol_patch.py"
 
-BASE="/oem/printer_data/u1_wled"
-SERVICE="/etc/init.d/S62u1-wled"
-BOOT="/etc/init.d/S99_bootcontrol"
-HOOK="/etc/init.d/S62u1-wled start"
-
-fail() {
-    echo "ERROR: $1" >&2
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: run this uninstaller as root." >&2
     exit 1
-}
-
-[ "$(id -u)" = "0" ] || fail "Run this uninstaller as root."
-
-if [ -x "$SERVICE" ]; then
-    "$SERVICE" stop || true
 fi
 
-if [ -f "$BOOT" ] && grep -Fq "$HOOK" "$BOOT"; then
-    cp "$BOOT" "$BASE/backups/S99_bootcontrol.pre-uninstall" 2>/dev/null || true
-    sed -i '\|^/etc/init.d/S62u1-wled start$|d' "$BOOT"
-    echo "Removed U1 WLED boot hook."
+if [ -x "$SERVICE_DST" ]; then
+    "$SERVICE_DST" stop || true
 fi
 
-rm -f "$SERVICE"
-rm -f /var/run/u1_wled.pid
+if [ -f "$BOOTCONTROL" ] && [ -f "$PATCHER" ]; then
+    python3 "$PATCHER" --remove "$BOOTCONTROL"
+else
+    echo "WARNING: boot hook was not automatically removed; review $BOOTCONTROL manually."
+fi
 
-echo "Service removed."
-echo "Project files were left in $BASE so logs/backups are not destroyed."
-echo "Delete that directory manually only if you no longer want the project files."
+rm -f "$SERVICE_DST"
+echo "Startup integration removed. Project files remain in $PROJECT_DIR for backup/reinstall."

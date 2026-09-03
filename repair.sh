@@ -1,47 +1,37 @@
 #!/bin/sh
+set -eu
 
-set -u
-
-BASE="/oem/printer_data/u1_wled"
-SERVICE_SRC="$BASE/S62u1-wled"
+PROJECT_DIR="/oem/printer_data/u1_wled"
 SERVICE_DST="/etc/init.d/S62u1-wled"
-BOOT="/etc/init.d/S99_bootcontrol"
-HOOK="/etc/init.d/S62u1-wled start"
+BOOTCONTROL="/etc/init.d/S99_bootcontrol"
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+BACKUP_DIR="$PROJECT_DIR/backups"
 
-fail() {
-    echo "ERROR: $1" >&2
+if [ "$HERE" != "$PROJECT_DIR" ]; then
+    echo "ERROR: copy the release files to $PROJECT_DIR and run this script there." >&2
     exit 1
-}
-
-[ "$(id -u)" = "0" ] || fail "Run this repair script as root."
-[ -f "$BASE/u1_wled.py" ] || fail "$BASE/u1_wled.py is missing."
-[ -f "$SERVICE_SRC" ] || fail "$SERVICE_SRC is missing."
-[ -f "$BOOT" ] || fail "$BOOT was not found."
-
-# Important: repair the CURRENT firmware's S99_bootcontrol in place.
-# Do not replace it with an old firmware copy.
-if [ "$(tail -n 1 "$BOOT")" != "exit 0" ]; then
-    fail "$BOOT does not end with 'exit 0'. Refusing to patch it automatically."
 fi
 
-mkdir -p "$BASE/backups"
-cp "$BOOT" "$BASE/backups/S99_bootcontrol.pre-repair" || fail "Could not back up current S99_bootcontrol."
-
-cp "$SERVICE_SRC" "$SERVICE_DST" || fail "Could not restore service launcher."
-chmod +x "$SERVICE_DST" || fail "Could not set service permissions."
-
-if grep -Fq "$HOOK" "$BOOT"; then
-    echo "Boot hook is already present."
-else
-    sed -i '$i /etc/init.d/S62u1-wled start' "$BOOT" || fail "Could not add boot hook."
-    echo "Restored U1 WLED boot hook."
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: run this repair script as root." >&2
+    exit 1
 fi
 
+for f in S62u1-wled bootcontrol_patch.py; do
+    [ -f "$HERE/$f" ] || { echo "ERROR: missing $HERE/$f" >&2; exit 1; }
+done
+[ -f "$BOOTCONTROL" ] || { echo "ERROR: $BOOTCONTROL not found" >&2; exit 1; }
+
+mkdir -p "$PROJECT_DIR" "$BACKUP_DIR"
+STAMP=$(date +%Y%m%d-%H%M%S)
+cp "$BOOTCONTROL" "$BACKUP_DIR/S99_bootcontrol.repair.$STAMP.bak"
+
+cp "$HERE/S62u1-wled" "$SERVICE_DST"
+chmod +x "$PROJECT_DIR/S62u1-wled" "$PROJECT_DIR/bootcontrol_patch.py" "$SERVICE_DST"
+
+python3 "$PROJECT_DIR/bootcontrol_patch.py" "$BOOTCONTROL"
 "$SERVICE_DST" restart
 sleep 2
+"$SERVICE_DST" status
 
-if "$SERVICE_DST" status; then
-    echo "Repair complete."
-else
-    fail "The bridge did not start. Check $BASE/u1_wled.log"
-fi
+echo "Repair complete."

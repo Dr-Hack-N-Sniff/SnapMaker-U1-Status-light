@@ -1,18 +1,17 @@
 #!/bin/sh
-
-BASE="/oem/printer_data/u1_wled"
 SERVICE="/etc/init.d/S62u1-wled"
+LOG="/oem/printer_data/u1_wled/u1_wled.log"
 
 if [ -x "$SERVICE" ]; then
     "$SERVICE" status
 else
-    echo "U1 WLED service launcher is not installed."
+    echo "U1 WLED service is not installed."
 fi
 
-echo ""
-echo "Recent log entries:"
-if [ -f "$BASE/u1_wled.log" ]; then
-    tail -n 25 "$BASE/u1_wled.log"
+echo
+if [ -f "$LOG" ]; then
+    echo "Recent log:"
+    tail -n 30 "$LOG"
 else
-    echo "No log exists yet."
+    echo "No log file found at $LOG"
 fi

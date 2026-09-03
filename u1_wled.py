@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import sys
 import time
 from urllib.request import Request, urlopen
 from urllib.error import URLError, HTTPError
@@ -58,6 +59,19 @@ def set_wled(r, g, b, brightness, effect=0, speed=None):
         return True
     except (URLError, HTTPError, TimeoutError, ValueError, OSError) as e:
         print(f"WLED error: {e}", flush=True)
+        return False
+
+
+def wled_off():
+    """Turn WLED LEDs off while leaving the controller powered."""
+    print("WLED -> OFF", flush=True)
+
+    try:
+        http_post_json(f"{WLED}/json/state", {"on": False}, timeout=2)
+        print("WLED LEDs turned off", flush=True)
+        return True
+    except (URLError, HTTPError, TimeoutError, ValueError, OSError) as e:
+        print(f"WLED off error: {e}", flush=True)
         return False
 
 
@@ -382,4 +396,8 @@ def main():
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 1 and sys.argv[1] == "--off":
+        success = wled_off()
+        sys.exit(0 if success else 1)
+
     main()

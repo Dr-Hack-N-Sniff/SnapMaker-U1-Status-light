@@ -1,5 +1,7 @@
 # Snapmaker U1 WLED Status Bridge - Quick Start
 
+**Current release: v1.1.0** - normal U1 shutdown/reboot turns the WLED LEDs off, and boot restores the current status.
+
 This is the short copy/paste version. Read `README.md` for the explanation behind each step.
 
 ## IMPORTANT: Set Your WLED IP Address
@@ -61,13 +63,7 @@ From your Windows computer, open Command Prompt or PowerShell in the folder cont
 Copy them to the U1:
 
 ```cmd
-scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
-```
-
-Example:
-
-```cmd
-scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
+scp u1_wled.py S62u1-wled bootcontrol_patch.py install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
 ```
 
 ## 5. Set Permissions
@@ -78,6 +74,7 @@ Back in the U1 SSH session:
 chmod +x /oem/printer_data/u1_wled/*.sh
 chmod +x /oem/printer_data/u1_wled/S62u1-wled
 chmod +x /oem/printer_data/u1_wled/u1_wled.py
+chmod +x /oem/printer_data/u1_wled/bootcontrol_patch.py
 ```
 
 ## 6. Test WLED Connectivity
@@ -130,11 +127,17 @@ reboot
 
 Do not manually start the bridge.
 
-After the U1 and WLED are available, the LEDs should automatically change to the standby indication:
+During reboot, the LEDs should first turn **off**. After the U1, Wi-Fi, and WLED are available again, the LEDs should automatically return to the current printer status. If idle, that is:
 
 **White breathing**
 
-For a stronger test, set WLED to a different color before rebooting. If the bridge starts correctly, it will overwrite that old WLED state after boot.
+A short delay is normal while networking becomes available.
+
+## v1.1 Power-Off Note
+
+Normal software shutdown/reboot runs the U1 shutdown scripts and sends WLED an OFF command. Abruptly flipping the physical U1 power switch does not give Linux time to send that command, so a separately powered WLED controller may remain on.
+
+**v1.2 is in development:** the planned heartbeat/failsafe aims to handle physical-switch power loss using software only and no additional hardware.
 
 ## Expected Status Colors
 

@@ -1,62 +1,43 @@
 #!/bin/sh
+set -eu
 
-set -u
-
-BASE="/oem/printer_data/u1_wled"
-SERVICE_SRC="$BASE/S62u1-wled"
+PROJECT_DIR="/oem/printer_data/u1_wled"
 SERVICE_DST="/etc/init.d/S62u1-wled"
-BOOT="/etc/init.d/S99_bootcontrol"
-HOOK="/etc/init.d/S62u1-wled start"
+BOOTCONTROL="/etc/init.d/S99_bootcontrol"
+HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+BACKUP_DIR="$PROJECT_DIR/backups"
 
-fail() {
-    echo "ERROR: $1" >&2
+if [ "$HERE" != "$PROJECT_DIR" ]; then
+    echo "ERROR: copy the release files to $PROJECT_DIR and run this script there." >&2
     exit 1
-}
-
-[ "$(id -u)" = "0" ] || fail "Run this installer as root."
-[ -f "$BASE/u1_wled.py" ] || fail "$BASE/u1_wled.py is missing."
-[ -f "$SERVICE_SRC" ] || fail "$SERVICE_SRC is missing."
-[ -f "$BOOT" ] || fail "$BOOT was not found. This firmware layout may be different."
-
-if ! command -v python3 >/dev/null 2>&1; then
-    fail "python3 was not found."
 fi
 
-if [ "$(tail -n 1 "$BOOT")" != "exit 0" ]; then
-    fail "$BOOT does not end with 'exit 0'. Refusing to patch it automatically."
+if [ "$(id -u)" -ne 0 ]; then
+    echo "ERROR: run this installer as root." >&2
+    exit 1
 fi
 
-mkdir -p "$BASE/backups"
+for f in u1_wled.py S62u1-wled bootcontrol_patch.py; do
+    [ -f "$HERE/$f" ] || { echo "ERROR: missing $HERE/$f" >&2; exit 1; }
+done
+[ -f "$BOOTCONTROL" ] || { echo "ERROR: $BOOTCONTROL not found" >&2; exit 1; }
 
-if [ ! -f "$BASE/backups/S99_bootcontrol.original" ]; then
-    cp "$BOOT" "$BASE/backups/S99_bootcontrol.original" || fail "Could not back up S99_bootcontrol."
-    echo "Saved original boot script to $BASE/backups/S99_bootcontrol.original"
+if grep -q 'YOUR_WLED_IP' "$HERE/u1_wled.py"; then
+    echo "ERROR: set your WLED IP in $HERE/u1_wled.py before installing." >&2
+    exit 1
 fi
 
-cp "$SERVICE_SRC" "$SERVICE_DST" || fail "Could not install service launcher."
-chmod +x "$SERVICE_DST" || fail "Could not set service permissions."
-chmod +x "$BASE/u1_wled.py" 2>/dev/null || true
+mkdir -p "$PROJECT_DIR" "$BACKUP_DIR"
+STAMP=$(date +%Y%m%d-%H%M%S)
+cp "$BOOTCONTROL" "$BACKUP_DIR/S99_bootcontrol.$STAMP.bak"
 
-if grep -Fq "$HOOK" "$BOOT"; then
-    echo "Boot hook already present."
-else
-    cp "$BOOT" "$BASE/backups/S99_bootcontrol.before-last-patch" || fail "Could not save pre-patch backup."
-    sed -i '$i /etc/init.d/S62u1-wled start' "$BOOT" || fail "Could not patch S99_bootcontrol."
-    echo "Added U1 WLED boot hook."
-fi
+cp "$HERE/S62u1-wled" "$SERVICE_DST"
+
+chmod +x "$PROJECT_DIR/u1_wled.py" "$PROJECT_DIR/S62u1-wled" "$PROJECT_DIR/bootcontrol_patch.py" "$SERVICE_DST"
+python3 "$PROJECT_DIR/bootcontrol_patch.py" "$BOOTCONTROL"
 
 "$SERVICE_DST" restart
 sleep 2
+"$SERVICE_DST" status
 
-if "$SERVICE_DST" status; then
-    echo ""
-    echo "Install complete."
-    echo "Log: $BASE/u1_wled.log"
-    echo ""
-    echo "Recommended final test:"
-    echo "  1. Set WLED to a clearly different color."
-    echo "  2. Reboot the U1."
-    echo "  3. Verify the bridge changes WLED back to the correct printer state."
-else
-    fail "The service did not remain running. Check $BASE/u1_wled.log"
-fi
+echo "Install complete."

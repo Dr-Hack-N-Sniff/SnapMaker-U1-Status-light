@@ -2,7 +2,7 @@
 
 > **Open-source U1 modification:** real-time WLED status lighting driven directly by the Snapmaker U1. No Raspberry Pi, Home Assistant server, cloud service, or always-on PC is required after installation.
 
-[Quick Start](QUICKSTART.md) | [v1.0.1 Release](https://github.com/Dr-Hack-N-Sniff/SnapMaker-U1-Status-light/releases/tag/v1.0.1) | [Changelog](CHANGELOG.md)
+[Quick Start](QUICKSTART.md) | [v1.1.0 Release](https://github.com/Dr-Hack-N-Sniff/SnapMaker-U1-Status-light/releases/tag/v1.1.0) | [Changelog](CHANGELOG.md)
 
 ## Project at a glance
 
@@ -33,6 +33,9 @@ The project has been tested on a real Snapmaker U1, including:
 - WLED retry after network startup delay
 - Moonraker startup delay handling
 - Firmware-repair script execution
+- v1.1 shutdown OFF behavior
+- v1.1 reboot OFF -> boot -> status recovery
+- v1.1 software poweroff and cold-start recovery
 
 A tested warm-up sequence was:
 
@@ -91,29 +94,13 @@ During printing, the green breathing rate increases as the print progresses:
 
 ### Installation Photos
 
-#### Complete Installation
+The project media documents:
 
-![Snapmaker U1 and BIQU PopStation Mini with green WLED status lighting](images/u1-wled-complete-installation.jpg)
-
-The completed Snapmaker U1 and BIQU PopStation Mini installation with the WLED status lighting active.
-
-#### WLED Controller
-
-![WLED ESP32 controller installed in the PopStation Mini](images/wled-controller-installation.jpg)
-
-The WLED ESP32 controller installed in its recessed enclosure inside the PopStation Mini.
-
-#### LED Strip Installation
-
-![Addressable RGB LED strip mounted along the lower edge of the PopStation Mini](images/led-strip-installation.jpg)
-
-The addressable RGB LED strip mounted along the lower edge of the PopStation Mini.
-
-#### Finished Controller Installation
-
-![Finished WLED controller enclosure and wiring installation](images/wled-controller-finished-installation.png)
-
-The finished controller enclosure and wiring installation with the controller protected by its cover.
+- The complete Snapmaker U1 and PopStation Mini installation
+- The WLED ESP32 controller mounted inside the PopStation Mini
+- Controller wiring
+- Addressable LED strip placement along the bottom edge
+- Green printing-status illumination
 
 > The PopStation Mini is not required. It is simply where I chose to install the controller and LED strip. The software should work with other WLED-compatible installations.
 
@@ -122,6 +109,22 @@ The finished controller enclosure and wiring installation with the controller pr
 A lightweight status-light bridge that runs **directly on the Snapmaker U1** and controls a WLED strip over the local network.
 
 No Windows PC, Raspberry Pi, Home Assistant server, or third-party Python packages are required once installed.
+
+## v1.1.0 changes
+
+- Normal U1 shutdown and reboot now send WLED an explicit OFF command before network shutdown.
+- The bridge automatically restores the current printer status after boot.
+- Service `restart` remains a maintenance action and does not intentionally blank WLED.
+- The `S99_bootcontrol` launcher is installed inside the `start)` branch only, preventing a shutdown path from starting another bridge process.
+- Install/repair logic is idempotent and removes the older unconditional launcher before applying the corrected boot-only hook.
+
+### Physical power-switch limitation
+
+If the U1 is switched off by **abruptly cutting physical power**, Linux cannot run its shutdown sequence. Because the WLED controller is independently powered, it cannot receive the final OFF command and may remain in its last state. v1.1.0 does **not** claim to solve that case.
+
+### v1.2.0 in development
+
+The next planned update is a software heartbeat/failsafe. The goal is for stock WLED to turn itself dark after the U1 disappears from the network, including when the physical power switch is used, **without requiring extra hardware** such as a relay, smart plug, Raspberry Pi, or separate controller.
 
 ## v1.0.1 changes
 
@@ -294,7 +297,7 @@ Open a **second** Windows Command Prompt or PowerShell in the downloaded reposit
 Run:
 
 ```cmd
-scp u1_wled.py S62u1-wled install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
+scp u1_wled.py S62u1-wled bootcontrol_patch.py install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
 ```
 
 Replace `YOUR_U1_IP` with your U1 address.
@@ -309,6 +312,7 @@ Back in the U1 SSH session:
 chmod +x /oem/printer_data/u1_wled/*.sh
 chmod +x /oem/printer_data/u1_wled/S62u1-wled
 chmod +x /oem/printer_data/u1_wled/u1_wled.py
+chmod +x /oem/printer_data/u1_wled/bootcontrol_patch.py
 ```
 
 Then run:
@@ -568,9 +572,11 @@ The line is:
 /etc/init.d/S62u1-wled start
 ```
 
-The installer first verifies that `S99_bootcontrol` ends with `exit 0`, makes a backup, and inserts the hook immediately before the final `exit 0`.
+In v1.1.0, the launcher is placed **inside the `start)` branch only**. This matters because the U1 also calls `S99_bootcontrol stop` during shutdown. An older unconditional launcher placed after `esac` could start a new bridge process during shutdown.
 
-It does **not** replace `S99_bootcontrol` with a copy from another firmware release.
+`bootcontrol_patch.py` removes any previous copy of the WLED launcher and inserts exactly one copy before the `;;` that closes the `start)` branch. The operation is idempotent and preserves the rest of the current firmware's `S99_bootcontrol`.
+
+The installer/repair script creates a backup before patching and does **not** replace `S99_bootcontrol` with a complete copy from another firmware release.
 
 ---
 
@@ -892,6 +898,24 @@ The original installation was manually tested for:
 
 ---
 
+# v1.1 power-state behavior
+
+The tested U1 uses BusyBox init. `/etc/inittab` calls `/etc/init.d/rcK` during shutdown/reboot, and `rcK` stops `S??` services in reverse numerical order. `S62u1-wled stop` therefore runs before `S40network`, while the WLED controller is still reachable.
+
+`S62u1-wled stop` performs:
+
+```text
+stop bridge process -> send WLED {"on": false}
+```
+
+On a reboot, WLED stays dark while the U1 restarts. The corrected late-boot launcher then starts the bridge, and the next successful status update sends `"on": true` with the current state. Wi-Fi/WLED startup can cause a short delay before the lights return.
+
+The behavior was physically tested for service stop/start, reboot, software `poweroff`, and cold startup.
+
+**Important:** flipping the U1 physical power switch while Linux is still running bypasses `rcK`; a separately powered WLED controller will not receive the OFF command. That case is the focus of the planned v1.2 heartbeat/failsafe.
+
+---
+
 # Safety and disclaimer
 
 This is an unofficial modification. It is not affiliated with or supported by Snapmaker or the WLED project.
@@ -915,6 +939,9 @@ install.sh      First-time installation and boot-hook setup
 repair.sh       Firmware-update repair tool
 uninstall.sh    Removes startup integration
 status.sh       Quick service + log status helper
+bootcontrol_patch.py  Safe/idempotent S99 boot-hook patch helper
+CHANGELOG.md     Version history
+RELEASE_NOTES_v1.1.0.md  v1.1 release notes
 ```
 
 
