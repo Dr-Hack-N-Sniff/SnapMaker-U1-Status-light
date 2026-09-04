@@ -254,3 +254,12 @@ Back up relevant files and WLED settings before modifying firmware or startup co
 ## License / contribution
 
 Issues, testing reports, controller compatibility results, documentation improvements, and pull requests are welcome. Reports from different ESP32/WLED controllers are especially useful for expanding the tested-hardware list.
+## Support the Project
+
+If this project saved you some time or you just want to support future Snapmaker and 3D-printing projects:
+
+### ☕ Buy Me a Roll of Filament
+
+[**Buy me a roll of filament**](https://www.buymeacoffee.com/hacknsniff)
+
+Contributions are completely optional. The project will remain free and open source.
