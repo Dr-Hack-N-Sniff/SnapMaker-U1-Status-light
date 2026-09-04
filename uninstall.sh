@@ -3,6 +3,7 @@ set -eu
 
 PROJECT_DIR="/oem/printer_data/u1_wled"
 SERVICE_DST="/etc/init.d/S62u1-wled"
+HEARTBEAT_SERVICE_DST="/etc/init.d/S63u1-wled-heartbeat"
 BOOTCONTROL="/etc/init.d/S99_bootcontrol"
 PATCHER="$PROJECT_DIR/bootcontrol_patch.py"
 
@@ -14,6 +15,9 @@ fi
 if [ -x "$SERVICE_DST" ]; then
     "$SERVICE_DST" stop || true
 fi
+if [ -x "$HEARTBEAT_SERVICE_DST" ]; then
+    "$HEARTBEAT_SERVICE_DST" stop || true
+fi
 
 if [ -f "$BOOTCONTROL" ] && [ -f "$PATCHER" ]; then
     python3 "$PATCHER" --remove "$BOOTCONTROL"
@@ -21,5 +25,5 @@ else
     echo "WARNING: boot hook was not automatically removed; review $BOOTCONTROL manually."
 fi
 
-rm -f "$SERVICE_DST"
+rm -f "$SERVICE_DST" "$HEARTBEAT_SERVICE_DST"
 echo "Startup integration removed. Project files remain in $PROJECT_DIR for backup/reinstall."
