@@ -258,7 +258,7 @@ Issues, testing reports, controller compatibility results, documentation improve
 
 If this project saved you some time or you just want to support future Snapmaker and 3D-printing projects:
 
-### ☕ Buy Me a Roll of Filament
+### 
 
 <a href="https://www.buymeacoffee.com/hacknsniff">
   <img src="https://img.shields.io/badge/Buy_me_a_roll_of_filament-FF5F5F?style=for-the-badge&logo=buymeacoffee&logoColor=white" alt="Buy me a roll of filament">
