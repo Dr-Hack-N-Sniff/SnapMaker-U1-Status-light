@@ -2,7 +2,7 @@
 
 > **Open-source U1 modification:** real-time WLED status lighting driven directly by the Snapmaker U1. No Raspberry Pi, Home Assistant server, cloud service, or always-on PC is required after installation.
 
-[Quick Start](QUICKSTART.md) | [v1.1.0 Release](https://github.com/Dr-Hack-N-Sniff/SnapMaker-U1-Status-light/releases/tag/v1.1.0) | [Changelog](CHANGELOG.md)
+[Quick Start](QUICKSTART.md) | [Changelog](CHANGELOG.md) | **Current recommended release: v1.2.0**
 
 ## Project at a glance
 
@@ -36,6 +36,10 @@ The project has been tested on a real Snapmaker U1, including:
 - v1.1 shutdown OFF behavior
 - v1.1 reboot OFF -> boot -> status recovery
 - v1.1 software poweroff and cold-start recovery
+- v1.2 heartbeat every 3 seconds
+- v1.2 watchdog timeout after about 10 seconds without heartbeat
+- v1.2 physical power-switch OFF -> LEDs OFF
+- v1.2 power-on -> heartbeat/status recovery
 
 A tested warm-up sequence was:
 
@@ -110,21 +114,23 @@ A lightweight status-light bridge that runs **directly on the Snapmaker U1** and
 
 No Windows PC, Raspberry Pi, Home Assistant server, or third-party Python packages are required once installed.
 
-## v1.1.0 changes
+## v1.2.0 - recommended
 
-- Normal U1 shutdown and reboot now send WLED an explicit OFF command before network shutdown.
-- The bridge automatically restores the current printer status after boot.
-- Service `restart` remains a maintenance action and does not intentionally blank WLED.
-- The `S99_bootcontrol` launcher is installed inside the `start)` branch only, preventing a shutdown path from starting another bridge process.
-- Install/repair logic is idempotent and removes the older unconditional launcher before applying the corrected boot-only hook.
+v1.2.0 adds the power-off failsafe that v1.1 could not provide when the U1 lost power abruptly.
 
-### Physical power-switch limitation
+- The U1 sends a lightweight heartbeat every 3 seconds.
+- The included WLED firmware turns the LEDs off after about 10 seconds without a heartbeat.
+- Physical U1 power-switch shutdown is now handled even when WLED has its own power supply.
+- On power-up, both U1 services start automatically and normal status lighting returns.
+- The heartbeat runs as a separate service so it remains isolated from the printer-status bridge.
 
-If the U1 is switched off by **abruptly cutting physical power**, Linux cannot run its shutdown sequence. Because the WLED controller is independently powered, it cannot receive the final OFF command and may remain in its last state. v1.1.0 does **not** claim to solve that case.
+### WLED firmware installation
 
-### v1.2.0 in development
+The required `firmware.bin` is included in the release. Back up WLED configuration and presets, then open **Config -> Security & Updates -> Update WLED**, select `firmware.bin`, and upload it. On the tested OTA-capable controller, no USB connection, programmer, PlatformIO, or firmware compiling is required.
 
-The next planned update is a software heartbeat/failsafe. The goal is for stock WLED to turn itself dark after the U1 disappears from the network, including when the physical power switch is used, **without requiring extra hardware** such as a relay, smart plug, Raspberry Pi, or separate controller.
+### v1.1.0
+
+v1.1.0 remains available as the previous release and rollback point. v1.2.0 supersedes it for new installations.
 
 ## v1.0.1 changes
 
@@ -950,5 +956,4 @@ RELEASE_NOTES_v1.1.0.md  v1.1 release notes
 ## License
 
 This project is released under the [MIT License](LICENSE).
-
 
