@@ -1,54 +1,24 @@
 # Snapmaker U1 WLED Status Bridge - Quick Start
 
-**Current release: v1.1.0** - normal U1 shutdown/reboot turns the WLED LEDs off, and boot restores the current status.
+**Current recommended release: v1.2.0**
 
-This is the short copy/paste version. Read `README.md` for the explanation behind each step.
+v1.2 adds the power-off failsafe: if the U1 disappears, WLED turns the LEDs off after about 10 seconds.
 
-## IMPORTANT: Set Your WLED IP Address
+## 1. Back up and update WLED
 
-Before installing, you must change the WLED IP address in `u1_wled.py` to the IP address of your own WLED controller.
+In WLED, open **Config -> Security & Updates** and back up both configuration and presets. Then choose **Update WLED**, upload the included `firmware.bin`, and allow WLED to reboot.
 
-Open `u1_wled.py` and find:
+This is a normal browser-based OTA update on the tested WLED controller. No compiling, PlatformIO, USB programmer, or extra hardware is required.
 
-```python
-WLED = "http://YOUR_WLED_IP"
-```
+## 2. Set your WLED IP
 
-Replace `YOUR_WLED_IP` with your WLED controller's IP address.
+Replace `YOUR_WLED_IP` in both `u1_wled.py` and `u1_wled_heartbeat.py` with your WLED controller address.
 
-For example, if your WLED controller is at `192.168.0.50`:
-
-```python
-WLED = "http://192.168.0.50"
-```
-
-Your WLED controller and Snapmaker U1 must be reachable from the same local network.
-
-## 1. Edit the WLED IP
-
-On your computer, edit `u1_wled.py`:
-
-```python
-WLED = "http://YOUR_WLED_IP"
-```
-
-Replace the address with your own WLED IP.
-
-## 2. SSH into the U1
-
-From Windows Command Prompt or PowerShell:
+## 3. Copy files to the U1
 
 ```cmd
 ssh root@YOUR_U1_IP
 ```
-
-Example:
-
-```cmd
-ssh root@YOUR_U1_IP
-```
-
-## 3. Create the Project Directory
 
 On the U1:
 
@@ -56,131 +26,67 @@ On the U1:
 mkdir -p /oem/printer_data/u1_wled
 ```
 
-## 4. Copy the Project Files
-
-From your Windows computer, open Command Prompt or PowerShell in the folder containing the downloaded project files.
-
-Copy them to the U1:
+From the computer containing the release files:
 
 ```cmd
-scp u1_wled.py S62u1-wled bootcontrol_patch.py install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
+scp u1_wled.py u1_wled_heartbeat.py S62u1-wled S63u1-wled-heartbeat bootcontrol_patch.py install.sh repair.sh uninstall.sh status.sh root@YOUR_U1_IP:/oem/printer_data/u1_wled/
 ```
 
-## 5. Set Permissions
+## 4. Install
 
-Back in the U1 SSH session:
+On the U1:
 
 ```sh
 chmod +x /oem/printer_data/u1_wled/*.sh
-chmod +x /oem/printer_data/u1_wled/S62u1-wled
-chmod +x /oem/printer_data/u1_wled/u1_wled.py
-chmod +x /oem/printer_data/u1_wled/bootcontrol_patch.py
-```
-
-## 6. Test WLED Connectivity
-
-Replace the IP with your WLED controller's address:
-
-```sh
-wget -qO- http://YOUR_WLED_IP/json/info
-```
-
-You should receive WLED JSON information.
-
-## 7. Test Moonraker
-
-```sh
-wget -qO- "http://127.0.0.1:7125/printer/objects/query?print_stats"
-```
-
-You should receive JSON containing the printer state.
-
-## 8. Install the Bridge
-
-Run:
-
-```sh
+chmod +x /oem/printer_data/u1_wled/S62u1-wled /oem/printer_data/u1_wled/S63u1-wled-heartbeat
+chmod +x /oem/printer_data/u1_wled/*.py
 /oem/printer_data/u1_wled/install.sh
 ```
 
-The installer creates the U1 startup service, safely patches the existing Snapmaker boot script, starts the bridge, and verifies that it is running.
-
-## 9. Check Status
+Verify:
 
 ```sh
 /oem/printer_data/u1_wled/status.sh
 ```
 
-You can also view the log directly:
+Both the status bridge and heartbeat service should report running.
 
-```sh
-tail -n 50 /oem/printer_data/u1_wled/u1_wled.log
-```
-
-## 10. Reboot Test
-
-Reboot the U1:
+## 5. Reboot test
 
 ```sh
 reboot
 ```
 
-Do not manually start the bridge.
+After boot, idle should return to **white breathing** and both services should be running.
 
-During reboot, the LEDs should first turn **off**. After the U1, Wi-Fi, and WLED are available again, the LEDs should automatically return to the current printer status. If idle, that is:
+## 6. Power-off failsafe test
 
-**White breathing**
+With the U1 idle and WLED separately powered, switch the U1 off physically. After about 10 seconds the LEDs should go dark. Power the U1 back on; after boot the status lighting should return automatically.
 
-A short delay is normal while networking becomes available.
+## Status colors
 
-## v1.1 Power-Off Note
-
-Normal software shutdown/reboot runs the U1 shutdown scripts and sends WLED an OFF command. Abruptly flipping the physical U1 power switch does not give Linux time to send that command, so a separately powered WLED controller may remain on.
-
-**v1.2 is in development:** the planned heartbeat/failsafe aims to handle physical-switch power loss using software only and no additional hardware.
-
-## Expected Status Colors
-
-| Printer Condition | LED Behavior |
+| Printer condition | LED behavior |
 |---|---|
-| Standby / Idle | White breathing |
-| Heated bed warming | Orange breathing |
-| Hotend warming | Red-orange breathing |
-| Bed + hotend warming | Faster orange/red breathing |
-| Printing 0-24% | Green, slow breathing |
-| Printing 25-49% | Green, faster breathing |
-| Printing 50-74% | Green, faster breathing |
-| Printing 75-89% | Green, fast breathing |
-| Printing 90-100% | Green, very fast breathing |
+| Idle | White breathing |
+| Bed heating | Deep orange breathing |
+| Hotend heating | Red-orange breathing |
+| Bed + hotend heating | Orange-red breathing |
+| Printing | Green breathing; speed increases with progress |
 | Paused | Yellow/orange breathing |
 | Complete | Solid green for about 30 seconds |
 | Cancelled | Solid red |
-| Error | Fast red effect |
+| Error | Fast red |
 
-## After a Snapmaker Firmware Update
+## After a Snapmaker firmware update
 
-If a firmware update removes the custom startup integration, SSH into the U1 and run:
+If the startup hook is removed, run:
 
 ```sh
 /oem/printer_data/u1_wled/repair.sh
 ```
 
-The repair script patches the current firmware's boot script instead of replacing it with an old firmware copy.
-
-Then verify:
-
-```sh
-/oem/printer_data/u1_wled/status.sh
-```
-
-Reboot once more to verify automatic startup.
-
 ## Uninstall
-
-To remove the startup integration:
 
 ```sh
 /oem/printer_data/u1_wled/uninstall.sh
 ```
-
-See `README.md` for the full technical explanation and troubleshooting information.
