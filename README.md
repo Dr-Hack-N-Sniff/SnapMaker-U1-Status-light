@@ -951,3 +951,5 @@ RELEASE_NOTES_v1.1.0.md  v1.1 release notes
 
 This project is released under the [MIT License](LICENSE).
 
+<script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="hacknsniff" data-color="#FF5F5F" data-emoji=""  data-font="Poppins" data-text="Buy me a roll of filament" data-outline-color="#000000" data-font-color="#ffffff" data-coffee-color="#FFDD00" ></script>
+
