@@ -260,6 +260,8 @@ If this project saved you some time or you just want to support future Snapmaker
 
 ### ☕ Buy Me a Roll of Filament
 
-[**Buy me a roll of filament**](https://www.buymeacoffee.com/hacknsniff)
+<a href="https://www.buymeacoffee.com/hacknsniff">
+  <img src="https://img.shields.io/badge/Buy_me_a_roll_of_filament-FF5F5F?style=for-the-badge&logo=buymeacoffee&logoColor=white" alt="Buy me a roll of filament">
+</a>
 
 Contributions are completely optional. The project will remain free and open source.
