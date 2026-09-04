@@ -1,5 +1,17 @@
 # Changelog
 
+## v1.2.0
+
+- Added custom WLED heartbeat watchdog firmware (`firmware.bin`).
+- U1 sends a 6-byte heartbeat every 3 seconds over UDP.
+- WLED turns the LEDs off after approximately 10 seconds without a heartbeat.
+- Added separate `S63u1-wled-heartbeat` service.
+- Updated `S99_bootcontrol` integration to late-start both S62 and S63.
+- Physical U1 power-switch shutdown now results in separately powered WLED LEDs turning off automatically.
+- Power-on/reboot restores heartbeat and normal printer status automatically.
+- OTA firmware update uses the normal WLED web updater; users do not need to compile firmware.
+- Physically validated heartbeat, timeout, reboot recovery, and physical power-off/on recovery on the development U1.
+
 ## v1.1.0
 
 - Added a `--off` command to `u1_wled.py` that sends WLED `{"on": false}` while leaving the controller powered.
