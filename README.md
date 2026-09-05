@@ -251,6 +251,28 @@ The status bridge is designed to **observe** printer state through Moonraker and
 
 Back up relevant files and WLED settings before modifying firmware or startup configuration. Use at your own risk.
 
+## Roadmap – Exploring v1.3
+
+With v1.2.0 complete and released, the next area I plan to explore is integration with the **official Snapmaker U1 Top Cover**.
+
+Possible ideas include:
+
+- Integrated WLED chamber and printer-status lighting
+- Print-progress visualization using WLED segments
+- Normal white chamber/work lighting
+- A printable, no-drill LED mounting system designed for the production Top Cover
+- Full integration with the existing v1.2 heartbeat/power-off failsafe
+
+These ideas are currently **exploratory** and may change after testing with the production Top Cover.
+
+### Hardware Status
+
+I ordered the official Snapmaker U1 Top Cover in **March 2026**. It is currently expected to ship in October.
+
+Physical design, measurements, and compatibility testing will begin once production hardware is available.
+
+If Snapmaker has a production or pre-production Top Cover available for development testing before my order arrives, I'd be happy to begin compatibility testing early and document the development publicly here on GitHub and on the Snapmaker Forum.
+
 ## License / contribution
 
 Issues, testing reports, controller compatibility results, documentation improvements, and pull requests are welcome. Reports from different ESP32/WLED controllers are especially useful for expanding the tested-hardware list.
