@@ -101,6 +101,16 @@ During printing, the green breathing rate increases as the print progresses:
 
 ### Installation Photos
 
+### Actual U1 Installation
+
+![Complete U1 WLED installation](images/u1-wled-complete-installation.jpg)
+
+![WLED controller finished installation](images/wled-controller-finished-installation.png)
+
+![WLED controller installation](images/wled-controller-installation.jpg)
+
+![LED strip installation](images/led-strip-installation.jpg)
+
 The project media documents:
 
 - The complete Snapmaker U1 and PopStation Mini installation
