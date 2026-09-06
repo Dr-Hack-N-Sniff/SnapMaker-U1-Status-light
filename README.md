@@ -1,5 +1,9 @@
 # Snapmaker U1 WLED Status Bridge
 
+![Snapmaker U1 WLED Status Bridge](images/u1-wled-status-light-banner.png)
+
+> **Unofficial community project — not affiliated with or endorsed by Snapmaker.**
+
 > **Open-source U1 modification:** real-time WLED status lighting driven directly by the Snapmaker U1. No Raspberry Pi, Home Assistant server, cloud service, or always-on PC is required after installation.
 
 [Quick Start](QUICKSTART.md) | [Changelog](CHANGELOG.md) | **Current recommended release: v1.2.1**
