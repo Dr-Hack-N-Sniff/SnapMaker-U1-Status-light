@@ -1,5 +1,20 @@
 # Changelog
 
+
+## v1.2.1
+
+- Improved firmware-update and recovery safety for install, repair, and uninstall operations.
+- `install.sh` now builds and validates a candidate `S99_bootcontrol` before modifying live startup files.
+- `repair.sh` now builds and validates a candidate `S99_bootcontrol` before modifying live startup files.
+- `uninstall.sh` now validates the proposed boot configuration before stopping services or changing live files.
+- Install and repair now syntax-check `S62u1-wled` and `S63u1-wled-heartbeat` before copying them into `/etc/init.d`.
+- Current `S99_bootcontrol` is backed up before live changes.
+- Existing unrelated startup hooks are preserved instead of restoring an older full boot configuration.
+- Added regression coverage to ensure the separate `S64u1-camera` startup hook is preserved.
+- Uninstall removes only the WLED S62/S63 integration and does not restore an old `S99_bootcontrol`.
+- Expanded the automated test suite to 16 tests.
+- Final install and repair scripts were physically validated on a Snapmaker U1 alongside the separate Fluidd camera bridge.
+
 ## v1.2.0
 
 - Added custom WLED heartbeat watchdog firmware (`firmware.bin`).

@@ -1,0 +1,6 @@
+.gitattributes text eol=lf
+*.sh text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+S62u1-wled text eol=lf
+S63u1-wled-heartbeat text eol=lf
