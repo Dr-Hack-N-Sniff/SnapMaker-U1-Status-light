@@ -960,6 +960,16 @@ Live verification included:
 
 ---
 
+---
+
+## 🖨️ Support the Project
+
+<a href="https://buymeacoffee.com/hacknsniff">
+  <img src="images/buy-me-a-roll-of-filament.png" alt="Buy me a roll of filament" width="600">
+</a>
+
+---
+
 # Safety and disclaimer
 
 ## Unofficial Community Project
