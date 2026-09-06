@@ -960,8 +960,6 @@ Live verification included:
 
 ---
 
----
-
 ## 🖨️ Support the Project
 
 <a href="https://buymeacoffee.com/hacknsniff">
