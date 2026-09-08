@@ -1017,4 +1017,22 @@ The WLED watchdog firmware/source is unchanged from v1.2.0.
 
 ## License
 
-This project is released under the [MIT License](LICENSE).
+The original SnapMaker U1 Status Light software in this repository is
+licensed under the **GNU Affero General Public License v3.0 (AGPL-3.0)**.
+
+This includes the original U1-side bridge, monitoring, watchdog, service,
+and related utility code developed for this project.
+
+### WLED-derived components
+
+This repository also contains firmware and/or source derived from the
+**WLED** project. WLED-derived components remain subject to WLED's
+applicable upstream license and copyright notices.
+
+The AGPL-3.0 license for this project's original code does **not**
+relicense WLED, Fluidd, Snapmaker software, or other third-party
+components.
+
+Earlier versions of this project's original code were made available
+under their previous licensing terms. Rights already granted under
+those earlier terms are unaffected by this change.
