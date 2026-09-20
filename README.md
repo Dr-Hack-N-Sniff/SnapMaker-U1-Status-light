@@ -766,7 +766,7 @@ To remove WLED integration while preserving project files and logs:
 /oem/printer_data/u1_wled/uninstall.sh
 ```
 
-v1.2.1 uninstall:
+Current uninstall behavior (introduced in v1.2.1):
 
 - Builds a candidate from the current `S99_bootcontrol`.
 - Removes only WLED S62/S63 launchers from the candidate.
