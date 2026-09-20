@@ -623,10 +623,9 @@ is not a WLED hook and is preserved.
 
 ---
 
-# v1.2.1 safe configuration changes
+# Safe configuration changes (introduced in v1.2.1)
 
-v1.2.1 uses the following recovery model:
-
+v1.2.1 introduced the following recovery model, which remains in use in v1.2.2:
 **Detect -> Validate -> Back up -> Modify**
 
 For install and repair:
