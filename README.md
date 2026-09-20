@@ -6,7 +6,7 @@
 
 > **Open-source U1 modification:** real-time WLED status lighting driven directly by the Snapmaker U1. No Raspberry Pi, Home Assistant server, cloud service, or always-on PC is required after installation.
 
-[Quick Start](QUICKSTART.md) | [Changelog](CHANGELOG.md) | **Current recommended release: v1.2.1**
+[Quick Start](QUICKSTART.md) | [Changelog](CHANGELOG.md) | **Current recommended release: v1.2.2**
 
 ## Project at a glance
 
@@ -46,6 +46,8 @@ The project has been tested on a real Snapmaker U1, including:
 - Physical power-switch OFF -> LEDs OFF
 - Power-on -> heartbeat/status recovery
 - v1.2.1 install and repair safety behavior
+- Real Snapmaker U1 firmware upgrade from 1.6.0 to 2.0.0
+- v1.2.2 recovery on firmware 2.0.0 using the existing safe installer
 - Coexistence with a separate Snapmaker U1 Fluidd camera bridge
 
 A tested warm-up sequence was:
@@ -132,23 +134,34 @@ The addressable LED strip installed along the bottom edge of the U1.
 
 ---
 
-## v1.2.1 - recommended
+## v1.2.2 - recommended
 
-v1.2.1 is a maintenance and recovery-safety release.
+v1.2.2 is a firmware-compatibility and recovery-validation release.
 
-The WLED status behavior, heartbeat protocol, and included watchdog firmware are unchanged from v1.2.0.
+The WLED status behavior, heartbeat protocol, and included watchdog firmware are unchanged from v1.2.0. The safe startup-configuration model introduced in v1.2.1 is retained.
 
-The major change is safer handling of the Snapmaker startup configuration.
+### Snapmaker U1 firmware 2.0.0 validation
 
-Installation, repair, and uninstall now follow:
+v1.2.2 was physically validated on a real Snapmaker U1 during an actual firmware upgrade from **1.6.0 to 2.0.0**.
+
+The upgrade confirmed:
+
+- `/oem/printer_data/u1_wled` survived the firmware update.
+- The live WLED services under `/etc/init.d` were removed by the firmware update.
+- Firmware 2.0.0 replaced `S99_bootcontrol`, removing the WLED startup hooks.
+- Re-running the existing safe `install.sh` against firmware 2.0.0 restored both WLED services.
+- The installer patched firmware 2.0.0's current `S99_bootcontrol` instead of restoring an older complete copy.
+- `S62u1-wled` and `S63u1-wled-heartbeat` were running after recovery.
+- Both WLED startup hooks were restored.
+- Normal physical WLED status-light operation was restored.
+
+The real 1.6.0 -> 2.0.0 upgrade validated the existing safety model:
 
 **Detect -> Validate -> Back up -> Modify**
 
-Before changing live startup files, the tools create and validate a proposed copy of the current firmware's `S99_bootcontrol`.
+### v1.2.1 recovery-safety foundation
 
-If a future Snapmaker firmware changes the expected boot layout, the operation stops instead of blindly forcing an older configuration.
-
-v1.2.1 also:
+v1.2.1 introduced the safe configuration handling retained by v1.2.2:
 
 - Validates service scripts before installing them.
 - Backs up the current boot configuration before modification.
@@ -181,7 +194,7 @@ Select `firmware.bin` and upload it.
 
 On the tested OTA-capable controller, no USB connection, programmer, PlatformIO, or firmware compiling is required.
 
-> **Already running v1.2.0?** The watchdog firmware is unchanged in v1.2.1. You do not need to re-flash WLED solely to upgrade the Snapmaker-side scripts to v1.2.1.
+> **Already running v1.2.0 or v1.2.1?** The watchdog firmware is unchanged in v1.2.2. You do not need to re-flash WLED solely to update the Snapmaker-side scripts to v1.2.2.
 
 ### Previous releases
 
@@ -699,13 +712,31 @@ are intentionally separate, but firmware may remove or replace:
 /etc/init.d/S99_bootcontrol
 ```
 
-After a firmware update:
+### Verified firmware 2.0.0 recovery
+
+A real Snapmaker U1 was upgraded from firmware **1.6.0 to 2.0.0** during v1.2.2 validation.
+
+The persistent project directory survived the upgrade. Firmware 2.0.0 replaced the live WLED init services and removed the WLED launchers from `S99_bootcontrol`.
+
+For this real upgrade, recovery was successfully performed with:
+
+```sh
+/oem/printer_data/u1_wled/install.sh
+```
+
+The installer built its candidate from firmware 2.0.0's **current** `S99_bootcontrol`, validated it, backed up the current configuration, restored both WLED services, and installed the WLED launchers.
+
+After recovery, both services were running and physical WLED status-light operation was restored.
+
+### Repair after a firmware update
+
+The existing safe repair path remains:
 
 ```sh
 /oem/printer_data/u1_wled/repair.sh
 ```
 
-v1.2.1 repair:
+`repair.sh`:
 
 1. Detects the current firmware configuration.
 2. Validates both WLED service scripts.
@@ -719,6 +750,8 @@ v1.2.1 repair:
 10. Restarts and checks both WLED services.
 
 This is intentionally safer than restoring an old complete `S99_bootcontrol`, because future Snapmaker firmware may legitimately change that file.
+
+> **Important:** Never restore an old complete `S99_bootcontrol` from a previous Snapmaker firmware version.
 
 If repair reports that the current firmware is incompatible, **stop and check this repository for an update rather than forcing an older boot configuration onto the printer.**
 
@@ -923,6 +956,23 @@ On power-up, the heartbeat and status services start again and normal lighting r
 
 # Testing
 
+## v1.2.2 real-world firmware-upgrade validation
+
+A physical Snapmaker U1 was upgraded from firmware **1.6.0 to 2.0.0**.
+
+Verified after the upgrade:
+
+- Persistent `/oem/printer_data/u1_wled` files survived.
+- Live WLED init services were removed/replaced by the firmware update.
+- WLED `S99_bootcontrol` startup hooks were removed.
+- `install.sh` safely restored the integration against firmware 2.0.0.
+- Status bridge was running after recovery.
+- Heartbeat service was running after recovery.
+- Both WLED startup hooks were restored.
+- Physical WLED status-light operation was restored.
+
+The v1.2.1 automated regression results below remain the safety foundation for v1.2.2.
+
 v1.2.1 passed the complete automated suite:
 
 ```text
@@ -982,7 +1032,7 @@ Installation requires root SSH access and modifies files under `/etc/init.d`.
 
 Firmware revisions can differ.
 
-v1.2.1 deliberately stops if the current `S99_bootcontrol` does not match the expected safe patch structure rather than blindly modifying an unfamiliar firmware layout.
+v1.2.2 retains the v1.2.1 safety behavior and deliberately stops if the current `S99_bootcontrol` does not match the expected safe patch structure rather than blindly modifying an unfamiliar firmware layout.
 
 **Detect -> Validate -> Back up -> Modify**
 
@@ -994,9 +1044,9 @@ v1.2.1 deliberately stops if the current `S99_bootcontrol` does not match the ex
 README.md                       Full project documentation
 QUICKSTART.md                   Short installation guide
 CHANGELOG.md                    Version history
-RELEASE_NOTES_v1.2.1.md        v1.2.1 release notes
-UPGRADE_v1.2.1.md              v1.2.1 upgrade instructions
-FORUM_UPDATE_v1.2.1.md         Forum release announcement
+RELEASE_NOTES_v1.2.2.md        v1.2.2 release notes
+UPGRADE_v1.2.2.md              v1.2.2 upgrade instructions
+FORUM_UPDATE_v1.2.2.md         Forum release announcement
 u1_wled.py                      Main status bridge
 u1_wled_heartbeat.py            U1 heartbeat sender
 S62u1-wled                      Status bridge init service
