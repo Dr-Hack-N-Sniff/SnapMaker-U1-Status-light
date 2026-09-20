@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.2.2
+
+- Added verified compatibility with Snapmaker U1 firmware 2.0.0.
+- Physically validated a real U1 firmware upgrade from 1.6.0 to 2.0.0.
+- Confirmed `/oem/printer_data/u1_wled` survives the firmware upgrade.
+- Confirmed the firmware upgrade replaces the live WLED services under `/etc/init.d` and removes the WLED startup hooks from `S99_bootcontrol`.
+- Successfully restored WLED on firmware 2.0.0 by re-running the existing safe `install.sh`.
+- Verified `S62u1-wled` and `S63u1-wled-heartbeat` were running after recovery.
+- Verified both WLED startup hooks were restored to the firmware 2.0.0 `S99_bootcontrol`.
+- Verified normal physical WLED status-light operation after recovery.
+- Confirmed recovery preserves the current firmware's `S99_bootcontrol` rather than restoring an older complete copy.
+- Added firmware 2.0.0 upgrade and recovery documentation.
+- WLED status behavior, heartbeat behavior, and watchdog firmware are unchanged.
+
 
 ## v1.2.1
 
